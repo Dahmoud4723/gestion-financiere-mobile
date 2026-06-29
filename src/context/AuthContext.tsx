@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { registerForPushNotifications, sendLocalNotification } from '../services/notifications';
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -24,6 +25,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (token: string) => {
     await AsyncStorage.setItem('token', token);
     setIsLoggedIn(true);
+    // Demander permission notifications
+    await registerForPushNotifications();
+    // Notification de bienvenue
+    await sendLocalNotification(
+      '👋 Bienvenue !',
+      'Vous êtes connecté à Gestion Financière IDER SI.'
+    );
   };
 
   const signOut = async () => {

@@ -160,7 +160,7 @@ export default function NouvelleTransactionScreen() {
         type,
         sourcePaiement: source,
         description: description.trim() || undefined,
-        date,
+        dateTransaction: date,
       });
       Alert.alert('Succès', 'Transaction créée !', [
         { text: 'OK', onPress: () => navigation.goBack() },

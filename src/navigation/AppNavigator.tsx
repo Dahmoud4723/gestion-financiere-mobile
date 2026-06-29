@@ -9,20 +9,49 @@ import { useAuth } from '../context/AuthContext';
 import { colors } from '../theme/colors';
 
 import LoginScreen from '../screens/LoginScreen';
+import RegisterScreen from '../screens/RegisterScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import NouvelleTransactionScreen from '../screens/NouvelleTransactionScreen';
 import ComptesScreen from '../screens/ComptesScreen';
 import AlertesScreen from '../screens/AlertesScreen';
+import BudgetsScreen from '../screens/BudgetsScreen';
+import CategoriesScreen from '../screens/CategoriesScreen';
+import ProfilScreen from '../screens/ProfilScreen';
+
+// ─── Types des stacks ─────────────────────────────────────────────────────────
+
+export type AuthStackParamList = {
+  Login: undefined;
+  Register: undefined;
+};
 
 export type TransactionsStackParamList = {
   TransactionsList: undefined;
   NouvelleTransaction: undefined;
 };
 
+export type BudgetsStackParamList = {
+  BudgetsList: undefined;
+  CategoriesList: undefined;
+};
+
+// ─── Navigateurs ──────────────────────────────────────────────────────────────
+
 const Tab = createBottomTabNavigator();
 const RootStack = createNativeStackNavigator();
+const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const TxStack = createNativeStackNavigator<TransactionsStackParamList>();
+const BgStack = createNativeStackNavigator<BudgetsStackParamList>();
+
+function AuthNavigator() {
+  return (
+    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="Register" component={RegisterScreen} />
+    </AuthStack.Navigator>
+  );
+}
 
 function TransactionsNavigator() {
   return (
@@ -33,12 +62,27 @@ function TransactionsNavigator() {
   );
 }
 
+function BudgetsNavigator() {
+  return (
+    <BgStack.Navigator screenOptions={{ headerShown: false }}>
+      <BgStack.Screen name="BudgetsList" component={BudgetsScreen} />
+      <BgStack.Screen name="CategoriesList" component={CategoriesScreen} />
+    </BgStack.Navigator>
+  );
+}
+
+// ─── Icônes des tabs ──────────────────────────────────────────────────────────
+
 const TAB_ICONS: Record<string, [string, string]> = {
-  Dashboard:    ['grid',            'grid-outline'],
+  Dashboard: ['grid', 'grid-outline'],
   Transactions: ['swap-horizontal', 'swap-horizontal-outline'],
-  Comptes:      ['wallet',          'wallet-outline'],
-  Alertes:      ['notifications',   'notifications-outline'],
+  Budgets: ['pie-chart', 'pie-chart-outline'],
+  Comptes: ['wallet', 'wallet-outline'],
+  Alertes: ['notifications', 'notifications-outline'],
+  Profil: ['person', 'person-outline'],
 };
+
+// ─── Onglets principaux ───────────────────────────────────────────────────────
 
 function MainTabs() {
   return (
@@ -53,6 +97,7 @@ function MainTabs() {
         },
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
+        tabBarLabelStyle: { fontSize: 10 },
         tabBarIcon: ({ focused, color, size }) => {
           const [active, inactive] = TAB_ICONS[route.name] ?? ['help', 'help-outline'];
           return (
@@ -65,13 +110,17 @@ function MainTabs() {
         },
       })}
     >
-      <Tab.Screen name="Dashboard"    component={DashboardScreen}       options={{ tabBarLabel: 'Accueil' }} />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: 'Accueil' }} />
       <Tab.Screen name="Transactions" component={TransactionsNavigator} options={{ tabBarLabel: 'Transactions' }} />
-      <Tab.Screen name="Comptes"      component={ComptesScreen}         options={{ tabBarLabel: 'Comptes' }} />
-      <Tab.Screen name="Alertes"      component={AlertesScreen}         options={{ tabBarLabel: 'Alertes' }} />
+      <Tab.Screen name="Budgets" component={BudgetsNavigator} options={{ tabBarLabel: 'Budgets' }} />
+      <Tab.Screen name="Comptes" component={ComptesScreen} options={{ tabBarLabel: 'Comptes' }} />
+      <Tab.Screen name="Alertes" component={AlertesScreen} options={{ tabBarLabel: 'Alertes' }} />
+      <Tab.Screen name="Profil" component={ProfilScreen} options={{ tabBarLabel: 'Profil' }} />
     </Tab.Navigator>
   );
 }
+
+// ─── Navigateur racine ────────────────────────────────────────────────────────
 
 export default function AppNavigator() {
   const { isLoggedIn, isLoading } = useAuth();
@@ -90,7 +139,7 @@ export default function AppNavigator() {
         {isLoggedIn ? (
           <RootStack.Screen name="Main" component={MainTabs} />
         ) : (
-          <RootStack.Screen name="Login" component={LoginScreen} />
+          <RootStack.Screen name="Auth" component={AuthNavigator} />
         )}
       </RootStack.Navigator>
     </NavigationContainer>

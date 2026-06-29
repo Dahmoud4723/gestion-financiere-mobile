@@ -24,10 +24,26 @@ export interface Transaction {
   categorieNom?: string;
 }
 
+export interface Budget {
+  id: string;
+  montantLimite: number;
+  montantDepense: number;
+  dateDebut: string;
+  dateFin: string;
+  categorieNom?: string;
+}
+
 export interface Alerte {
   id: string;
   message: string;
   type: string;
   lue: boolean;
   creeLe: string;
+}
+
+export interface Profil {
+  id: string;
+  nom: string;
+  email: string;
+  role: string;
 }
