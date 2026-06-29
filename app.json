@@ -6,6 +6,11 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0f2e"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.idersi.gestionfinanciere",
@@ -36,7 +41,8 @@
           "color": "#5271ff",
           "sounds": []
         }
-      ]
+      ],
+      "expo-splash-screen"
     ]
   }
 }
