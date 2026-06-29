@@ -25,8 +25,14 @@ export const comptesAPI = {
   getAll: () => api.get('/api/comptes'),
   create: (data: { nom: string; type: string; soldeInitial: number }) =>
     api.post('/api/comptes', data),
+  virement: (data: {
+    compteSourceId: string;
+    compteDestinationId: string;
+    montant: number;
+    description?: string;
+    dateTransaction: string;
+  }) => api.post('/api/comptes/virement', data),
 };
-
 export const transactionsAPI = {
   getAll: () => api.get('/api/transactions'),
   create: (data: {
