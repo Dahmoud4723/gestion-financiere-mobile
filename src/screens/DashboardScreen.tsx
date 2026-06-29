@@ -8,6 +8,7 @@ import { LineChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { comptesAPI, transactionsAPI, alertesAPI } from '../services/api';
+import { isOnline, saveOffline, loadOffline, getLastSync } from '../services/offline';
 import { useAuth } from '../context/AuthContext';
 import type { Compte, Transaction, Alerte } from '../types';
 
@@ -43,20 +44,52 @@ export default function DashboardScreen() {
   const [alertes, setAlertes] = useState<Alerte[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [offline, setOffline] = useState(false);
+  const [lastSync, setLastSync] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const [cRes, tRes, aRes] = await Promise.all([
-        comptesAPI.getAll(),
-        transactionsAPI.getAll(),
-        alertesAPI.getAll(),
-      ]);
-      const unwrap = (r: any) => r.data?.data ?? r.data ?? [];
-      setComptes(unwrap(cRes));
-      setTransactions(unwrap(tRes));
-      setAlertes(unwrap(aRes));
+      const online = await isOnline();
+      setOffline(!online);
+
+      if (online) {
+        const [cRes, tRes, aRes] = await Promise.all([
+          comptesAPI.getAll(),
+          transactionsAPI.getAll(),
+          alertesAPI.getAll(),
+        ]);
+        const unwrap = (r: any) => r.data?.data ?? r.data ?? [];
+        const comptesData = unwrap(cRes);
+        const transactionsData = unwrap(tRes);
+        const alertesData = unwrap(aRes);
+
+        setComptes(comptesData);
+        setTransactions(transactionsData);
+        setAlertes(alertesData);
+
+        await saveOffline('comptes', comptesData);
+        await saveOffline('transactions', transactionsData);
+        await saveOffline('alertes', alertesData);
+        setLastSync(new Date().toISOString());
+      } else {
+        const comptesData = await loadOffline('comptes');
+        const transactionsData = await loadOffline('transactions');
+        const alertesData = await loadOffline('alertes');
+        const sync = await getLastSync('comptes');
+
+        if (comptesData) setComptes(comptesData);
+        if (transactionsData) setTransactions(transactionsData);
+        if (alertesData) setAlertes(alertesData);
+        if (sync) setLastSync(sync);
+      }
     } catch (e) {
       console.error(e);
+      const comptesData = await loadOffline('comptes');
+      const transactionsData = await loadOffline('transactions');
+      const alertesData = await loadOffline('alertes');
+      if (comptesData) setComptes(comptesData);
+      if (transactionsData) setTransactions(transactionsData);
+      if (alertesData) setAlertes(alertesData);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -116,6 +149,18 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* Badge hors ligne */}
+      {offline && (
+        <View style={styles.offlineBanner}>
+          <Ionicons name="cloud-offline-outline" size={14} color="#fff" />
+          <Text style={styles.offlineText}>
+            Hors ligne — {lastSync
+              ? `Sync: ${new Date(lastSync).toLocaleDateString('fr-FR')}`
+              : 'Jamais synchronisé'}
+          </Text>
+        </View>
+      )}
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -214,6 +259,8 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   loader: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+  offlineBanner: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.warning, paddingHorizontal: 20, paddingVertical: 8 },
+  offlineText: { fontSize: 12, color: '#fff', fontWeight: '500' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 10 },
   headerTitle: { fontSize: 22, fontWeight: '700', color: colors.text },
   headerSub: { fontSize: 13, color: colors.textMuted, marginTop: 2, textTransform: 'capitalize' },

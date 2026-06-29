@@ -9,24 +9,30 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { profilAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import type { Lang } from '../i18n/translations';
 import type { Profil } from '../types';
+
+const LANG_OPTIONS: { value: Lang; label: string; flag: string }[] = [
+  { value: 'fr', label: 'Français', flag: '🇫🇷' },
+  { value: 'ar', label: 'العربية', flag: '🇲🇷' },
+];
 
 export default function ProfilScreen() {
   const { signOut } = useAuth();
-  const [profil,    setProfil]    = useState<Profil | null>(null);
-  const [loading,   setLoading]   = useState(true);
+  const { t, lang, setLanguage } = useLanguage();
+  const [profil, setProfil] = useState<Profil | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Modifier profil
-  const [editNom,   setEditNom]   = useState('');
+  const [editNom, setEditNom] = useState('');
   const [editEmail, setEditEmail] = useState('');
-  const [saving,    setSaving]    = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // Changer mot de passe
-  const [oldPass,   setOldPass]   = useState('');
-  const [newPass,   setNewPass]   = useState('');
-  const [confPass,  setConfPass]  = useState('');
+  const [oldPass, setOldPass] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [confPass, setConfPass] = useState('');
   const [savingPwd, setSavingPwd] = useState(false);
-  const [showPwd,   setShowPwd]   = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -46,7 +52,7 @@ export default function ProfilScreen() {
 
   const handleSaveProfil = async () => {
     if (!editNom.trim() && !editEmail.trim()) {
-      Alert.alert('Erreur', 'Au moins un champ est requis.');
+      Alert.alert(t.common.error, t.profil.atLeastOneField);
       return;
     }
     setSaving(true);
@@ -54,9 +60,9 @@ export default function ProfilScreen() {
       const res = await profilAPI.update({ nom: editNom.trim(), email: editEmail.trim() });
       const updated: Profil = res.data?.data ?? res.data;
       setProfil(updated);
-      Alert.alert('Succès', 'Profil mis à jour.');
+      Alert.alert(t.common.success, t.profil.profilUpdated);
     } catch (e: any) {
-      Alert.alert('Erreur', e?.response?.data?.message ?? 'Impossible de mettre à jour le profil.');
+      Alert.alert(t.common.error, e?.response?.data?.message ?? t.profil.errorUpdate);
     } finally {
       setSaving(false);
     }
@@ -64,24 +70,24 @@ export default function ProfilScreen() {
 
   const handleChangePassword = async () => {
     if (!oldPass || !newPass || !confPass) {
-      Alert.alert('Erreur', 'Tous les champs sont requis.');
+      Alert.alert(t.common.error, t.profil.allFieldsRequired);
       return;
     }
     if (newPass !== confPass) {
-      Alert.alert('Erreur', 'Les nouveaux mots de passe ne correspondent pas.');
+      Alert.alert(t.common.error, t.profil.passwordMismatch);
       return;
     }
     if (newPass.length < 6) {
-      Alert.alert('Erreur', 'Le mot de passe doit comporter au moins 6 caractères.');
+      Alert.alert(t.common.error, t.profil.passwordTooShort);
       return;
     }
     setSavingPwd(true);
     try {
       await profilAPI.updatePassword({ ancienMotDePasse: oldPass, nouveauMotDePasse: newPass });
       setOldPass(''); setNewPass(''); setConfPass('');
-      Alert.alert('Succès', 'Mot de passe modifié.');
+      Alert.alert(t.common.success, t.profil.passwordChanged);
     } catch (e: any) {
-      Alert.alert('Erreur', e?.response?.data?.message ?? 'Ancien mot de passe incorrect.');
+      Alert.alert(t.common.error, e?.response?.data?.message ?? t.profil.errorPassword);
     } finally {
       setSavingPwd(false);
     }
@@ -105,10 +111,10 @@ export default function ProfilScreen() {
 
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Profil</Text>
+            <Text style={styles.title}>{t.profil.title}</Text>
             <TouchableOpacity onPress={signOut} style={styles.logoutBtn}>
               <Ionicons name="log-out-outline" size={18} color={colors.danger} />
-              <Text style={styles.logoutText}>Déconnexion</Text>
+              <Text style={styles.logoutText}>{t.profil.logout}</Text>
             </TouchableOpacity>
           </View>
 
@@ -128,33 +134,62 @@ export default function ProfilScreen() {
             </View>
           )}
 
+          {/* Sélecteur de langue */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="language-outline" size={16} color={colors.accent} />
+              <Text style={styles.sectionTitle}>{t.profil.languageSection}</Text>
+            </View>
+            <View style={styles.langRow}>
+              {LANG_OPTIONS.map((opt) => {
+                const active = lang === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    style={[styles.langBtn, active && styles.langBtnActive]}
+                    onPress={() => setLanguage(opt.value)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.langFlag}>{opt.flag}</Text>
+                    <Text style={[styles.langLabel, active && styles.langLabelActive]}>
+                      {opt.label}
+                    </Text>
+                    {active && (
+                      <Ionicons name="checkmark-circle" size={16} color={colors.accent} style={styles.langCheck} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
           {/* Modifier profil */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Ionicons name="person-outline" size={16} color={colors.accent} />
-              <Text style={styles.sectionTitle}>Modifier le profil</Text>
+              <Text style={styles.sectionTitle}>{t.profil.editSection}</Text>
             </View>
 
-            <Text style={styles.label}>Nom</Text>
+            <Text style={styles.label}>{t.profil.name}</Text>
             <View style={styles.inputWrap}>
               <Ionicons name="person-outline" size={17} color={colors.textMuted} />
               <TextInput
                 style={styles.input}
                 value={editNom}
                 onChangeText={setEditNom}
-                placeholder="Votre nom"
+                placeholder={t.profil.namePlaceholder}
                 placeholderTextColor={colors.textMuted}
               />
             </View>
 
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>{t.profil.email}</Text>
             <View style={styles.inputWrap}>
               <Ionicons name="mail-outline" size={17} color={colors.textMuted} />
               <TextInput
                 style={styles.input}
                 value={editEmail}
                 onChangeText={setEditEmail}
-                placeholder="Votre email"
+                placeholder={t.profil.emailPlaceholder}
                 placeholderTextColor={colors.textMuted}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -168,7 +203,7 @@ export default function ProfilScreen() {
             >
               {saving
                 ? <ActivityIndicator size="small" color="#fff" />
-                : <Text style={styles.btnText}>Enregistrer</Text>
+                : <Text style={styles.btnText}>{t.profil.save}</Text>
               }
             </TouchableOpacity>
           </View>
@@ -177,7 +212,7 @@ export default function ProfilScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Ionicons name="lock-closed-outline" size={16} color={colors.accent} />
-              <Text style={styles.sectionTitle}>Changer le mot de passe</Text>
+              <Text style={styles.sectionTitle}>{t.profil.passwordSection}</Text>
               <TouchableOpacity onPress={() => setShowPwd(v => !v)} style={{ marginLeft: 'auto' }}>
                 <Ionicons
                   name={showPwd ? 'eye-off-outline' : 'eye-outline'}
@@ -187,40 +222,40 @@ export default function ProfilScreen() {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.label}>Ancien mot de passe</Text>
+            <Text style={styles.label}>{t.profil.oldPassword}</Text>
             <View style={styles.inputWrap}>
               <Ionicons name="lock-closed-outline" size={17} color={colors.textMuted} />
               <TextInput
                 style={styles.input}
                 value={oldPass}
                 onChangeText={setOldPass}
-                placeholder="••••••••"
+                placeholder={t.profil.passwordPlaceholder}
                 placeholderTextColor={colors.textMuted}
                 secureTextEntry={!showPwd}
               />
             </View>
 
-            <Text style={styles.label}>Nouveau mot de passe</Text>
+            <Text style={styles.label}>{t.profil.newPassword}</Text>
             <View style={styles.inputWrap}>
               <Ionicons name="lock-open-outline" size={17} color={colors.textMuted} />
               <TextInput
                 style={styles.input}
                 value={newPass}
                 onChangeText={setNewPass}
-                placeholder="••••••••"
+                placeholder={t.profil.passwordPlaceholder}
                 placeholderTextColor={colors.textMuted}
                 secureTextEntry={!showPwd}
               />
             </View>
 
-            <Text style={styles.label}>Confirmer</Text>
+            <Text style={styles.label}>{t.profil.confirmPassword}</Text>
             <View style={styles.inputWrap}>
               <Ionicons name="lock-open-outline" size={17} color={colors.textMuted} />
               <TextInput
                 style={styles.input}
                 value={confPass}
                 onChangeText={setConfPass}
-                placeholder="••••••••"
+                placeholder={t.profil.passwordPlaceholder}
                 placeholderTextColor={colors.textMuted}
                 secureTextEntry={!showPwd}
               />
@@ -233,7 +268,7 @@ export default function ProfilScreen() {
             >
               {savingPwd
                 ? <ActivityIndicator size="small" color={colors.accent} />
-                : <Text style={[styles.btnText, { color: colors.accent }]}>Changer le mot de passe</Text>
+                : <Text style={[styles.btnText, { color: colors.accent }]}>{t.profil.passwordSection}</Text>
               }
             </TouchableOpacity>
           </View>
@@ -262,6 +297,18 @@ const styles = StyleSheet.create({
   section:       { marginHorizontal: 20, marginBottom: 16, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 18, gap: 10 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
   sectionTitle:  { fontSize: 15, fontWeight: '600', color: colors.text },
+  langRow: { flexDirection: 'row', gap: 10 },
+  langBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 12, borderRadius: 12,
+    borderWidth: 1.5, borderColor: colors.border,
+    backgroundColor: colors.background,
+  },
+  langBtnActive: { borderColor: colors.accent, backgroundColor: `${colors.accent}15` },
+  langFlag:  { fontSize: 20 },
+  langLabel: { fontSize: 14, fontWeight: '600', color: colors.textMuted },
+  langLabelActive: { color: colors.accent },
+  langCheck: { marginLeft: 2 },
   label:     { fontSize: 13, color: colors.textMuted, fontWeight: '500' },
   inputWrap: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11 },
   input:     { flex: 1, color: colors.text, fontSize: 15 },

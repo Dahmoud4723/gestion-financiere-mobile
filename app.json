@@ -42,7 +42,8 @@
           "sounds": []
         }
       ],
-      "expo-splash-screen"
+      "expo-splash-screen",
+      "expo-localization"
     ]
   }
 }

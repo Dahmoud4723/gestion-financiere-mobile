@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { colors } from '../theme/colors';
 
 import LoginScreen from '../screens/LoginScreen';
@@ -85,6 +86,7 @@ const TAB_ICONS: Record<string, [string, string]> = {
 // ─── Onglets principaux ───────────────────────────────────────────────────────
 
 function MainTabs() {
+  const { t } = useLanguage();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -110,12 +112,12 @@ function MainTabs() {
         },
       })}
     >
-      <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: 'Accueil' }} />
-      <Tab.Screen name="Transactions" component={TransactionsNavigator} options={{ tabBarLabel: 'Transactions' }} />
-      <Tab.Screen name="Budgets" component={BudgetsNavigator} options={{ tabBarLabel: 'Budgets' }} />
-      <Tab.Screen name="Comptes" component={ComptesScreen} options={{ tabBarLabel: 'Comptes' }} />
-      <Tab.Screen name="Alertes" component={AlertesScreen} options={{ tabBarLabel: 'Alertes' }} />
-      <Tab.Screen name="Profil" component={ProfilScreen} options={{ tabBarLabel: 'Profil' }} />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: t.nav.dashboard }} />
+      <Tab.Screen name="Transactions" component={TransactionsNavigator} options={{ tabBarLabel: t.nav.transactions }} />
+      <Tab.Screen name="Budgets" component={BudgetsNavigator} options={{ tabBarLabel: t.nav.budgets }} />
+      <Tab.Screen name="Comptes" component={ComptesScreen} options={{ tabBarLabel: t.nav.comptes }} />
+      <Tab.Screen name="Alertes" component={AlertesScreen} options={{ tabBarLabel: t.nav.alertes }} />
+      <Tab.Screen name="Profil" component={ProfilScreen} options={{ tabBarLabel: t.nav.profil }} />
     </Tab.Navigator>
   );
 }

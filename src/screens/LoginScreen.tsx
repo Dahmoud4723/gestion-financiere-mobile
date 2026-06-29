@@ -10,10 +10,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../theme/colors';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { isBiometricAvailable, authenticateWithBiometrics } from '../services/biometrics';
 
 export default function LoginScreen() {
   const navigation = useNavigation<any>();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
@@ -27,7 +29,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
-      Alert.alert('Champs manquants', 'Veuillez remplir tous les champs.');
+      Alert.alert(t.auth.missingFieldsTitle, t.auth.missingFieldsMsg);
       return;
     }
     setLoading(true);
@@ -39,8 +41,8 @@ export default function LoginScreen() {
       await signIn(token);
     } catch (err: any) {
       Alert.alert(
-        'Connexion échouée',
-        err.response?.data?.message ?? err.message ?? 'Vérifiez vos identifiants.'
+        t.auth.loginFailedTitle,
+        err.response?.data?.message ?? err.message ?? t.auth.loginFailedMsg,
       );
     } finally {
       setLoading(false);
@@ -50,14 +52,14 @@ export default function LoginScreen() {
   const handleBiometricLogin = async () => {
     const savedToken = await AsyncStorage.getItem('lastToken');
     if (!savedToken) {
-      Alert.alert('Info', 'Connectez-vous d\'abord avec votre mot de passe pour activer Face ID.');
+      Alert.alert('Info', t.auth.biometricFirstLogin);
       return;
     }
     const success = await authenticateWithBiometrics();
     if (success) {
       await signIn(savedToken);
     } else {
-      Alert.alert('Échec', 'Authentification biométrique échouée.');
+      Alert.alert(t.auth.biometricFailedTitle, t.auth.biometricFailedMsg);
     }
   };
 
@@ -69,22 +71,22 @@ export default function LoginScreen() {
             <View style={styles.logoCircle}>
               <Text style={styles.logoEmoji}>💰</Text>
             </View>
-            <Text style={styles.title}>Gestion Financière</Text>
-            <Text style={styles.subtitle}>IDER SI — Nouakchott</Text>
+            <Text style={styles.title}>{t.auth.appTitle}</Text>
+            <Text style={styles.subtitle}>{t.auth.appSubtitle}</Text>
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Connexion</Text>
+            <Text style={styles.cardTitle}>{t.auth.loginTitle}</Text>
 
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Adresse e-mail</Text>
+              <Text style={styles.label}>{t.auth.email}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="mail-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   value={email}
                   onChangeText={setEmail}
-                  placeholder="exemple@email.com"
+                  placeholder={t.auth.emailPlaceholder}
                   placeholderTextColor={colors.textMuted}
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -94,14 +96,14 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Mot de passe</Text>
+              <Text style={styles.label}>{t.auth.password}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="lock-closed-outline" size={18} color={colors.textMuted} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   value={password}
                   onChangeText={setPassword}
-                  placeholder="••••••••"
+                  placeholder={t.auth.passwordPlaceholder}
                   placeholderTextColor={colors.textMuted}
                   secureTextEntry={!showPwd}
                 />
@@ -122,7 +124,7 @@ export default function LoginScreen() {
               ) : (
                 <>
                   <Ionicons name="log-in-outline" size={20} color="#fff" />
-                  <Text style={styles.btnText}>Se connecter</Text>
+                  <Text style={styles.btnText}>{t.auth.loginBtn}</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -130,13 +132,13 @@ export default function LoginScreen() {
             {biometricAvailable && (
               <TouchableOpacity style={styles.biometricBtn} onPress={handleBiometricLogin}>
                 <Ionicons name="finger-print-outline" size={22} color={colors.accent} />
-                <Text style={styles.biometricText}>Face ID / Touch ID</Text>
+                <Text style={styles.biometricText}>{t.auth.biometricBtn}</Text>
               </TouchableOpacity>
             )}
 
             <View style={styles.separator}>
               <View style={styles.sepLine} />
-              <Text style={styles.sepText}>ou</Text>
+              <Text style={styles.sepText}>{t.auth.or}</Text>
               <View style={styles.sepLine} />
             </View>
 
@@ -146,11 +148,11 @@ export default function LoginScreen() {
               activeOpacity={0.85}
             >
               <Ionicons name="person-add-outline" size={20} color={colors.accent} />
-              <Text style={styles.registerBtnText}>Créer un compte</Text>
+              <Text style={styles.registerBtnText}>{t.auth.registerLink}</Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.footer}>© 2026 IDER SI — Tous droits réservés</Text>
+          <Text style={styles.footer}>{t.auth.footer}</Text>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -169,8 +171,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center', marginBottom: 16,
   },
   logoEmoji: { fontSize: 42 },
-  title: { fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: 0.3 },
-  subtitle: { fontSize: 13, color: colors.textMuted, marginTop: 4 },
+  title: { fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: 0.3, textAlign: 'center' },
+  subtitle: { fontSize: 13, color: colors.textMuted, marginTop: 4, textAlign: 'center' },
   card: {
     backgroundColor: colors.card,
     borderWidth: 1, borderColor: colors.border,
