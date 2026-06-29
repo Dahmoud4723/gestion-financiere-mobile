@@ -19,8 +19,7 @@ import AlertesScreen from '../screens/AlertesScreen';
 import BudgetsScreen from '../screens/BudgetsScreen';
 import CategoriesScreen from '../screens/CategoriesScreen';
 import ProfilScreen from '../screens/ProfilScreen';
-
-// ─── Types des stacks ─────────────────────────────────────────────────────────
+import StatsScreen from '../screens/StatsScreen';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -36,8 +35,6 @@ export type BudgetsStackParamList = {
   BudgetsList: undefined;
   CategoriesList: undefined;
 };
-
-// ─── Navigateurs ──────────────────────────────────────────────────────────────
 
 const Tab = createBottomTabNavigator();
 const RootStack = createNativeStackNavigator();
@@ -72,18 +69,14 @@ function BudgetsNavigator() {
   );
 }
 
-// ─── Icônes des tabs ──────────────────────────────────────────────────────────
-
 const TAB_ICONS: Record<string, [string, string]> = {
   Dashboard: ['grid', 'grid-outline'],
   Transactions: ['swap-horizontal', 'swap-horizontal-outline'],
   Budgets: ['pie-chart', 'pie-chart-outline'],
-  Comptes: ['wallet', 'wallet-outline'],
+  Stats: ['stats-chart', 'stats-chart-outline'],
   Alertes: ['notifications', 'notifications-outline'],
   Profil: ['person', 'person-outline'],
 };
-
-// ─── Onglets principaux ───────────────────────────────────────────────────────
 
 function MainTabs() {
   const { t } = useLanguage();
@@ -115,14 +108,12 @@ function MainTabs() {
       <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: t.nav.dashboard }} />
       <Tab.Screen name="Transactions" component={TransactionsNavigator} options={{ tabBarLabel: t.nav.transactions }} />
       <Tab.Screen name="Budgets" component={BudgetsNavigator} options={{ tabBarLabel: t.nav.budgets }} />
-      <Tab.Screen name="Comptes" component={ComptesScreen} options={{ tabBarLabel: t.nav.comptes }} />
+      <Tab.Screen name="Stats" component={StatsScreen} options={{ tabBarLabel: 'Stats' }} />
       <Tab.Screen name="Alertes" component={AlertesScreen} options={{ tabBarLabel: t.nav.alertes }} />
       <Tab.Screen name="Profil" component={ProfilScreen} options={{ tabBarLabel: t.nav.profil }} />
     </Tab.Navigator>
   );
 }
-
-// ─── Navigateur racine ────────────────────────────────────────────────────────
 
 export default function AppNavigator() {
   const { isLoggedIn, isLoading } = useAuth();
