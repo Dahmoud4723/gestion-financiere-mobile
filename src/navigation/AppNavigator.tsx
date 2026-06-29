@@ -20,6 +20,7 @@ import BudgetsScreen from '../screens/BudgetsScreen';
 import CategoriesScreen from '../screens/CategoriesScreen';
 import ProfilScreen from '../screens/ProfilScreen';
 import StatsScreen from '../screens/StatsScreen';
+import RapportScreen from '../screens/RapportScreen';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -74,6 +75,7 @@ const TAB_ICONS: Record<string, [string, string]> = {
   Transactions: ['swap-horizontal', 'swap-horizontal-outline'],
   Budgets: ['pie-chart', 'pie-chart-outline'],
   Stats: ['stats-chart', 'stats-chart-outline'],
+  Rapport: ['document-text', 'document-text-outline'],
   Alertes: ['notifications', 'notifications-outline'],
   Profil: ['person', 'person-outline'],
 };
@@ -109,6 +111,7 @@ function MainTabs() {
       <Tab.Screen name="Transactions" component={TransactionsNavigator} options={{ tabBarLabel: t.nav.transactions }} />
       <Tab.Screen name="Budgets" component={BudgetsNavigator} options={{ tabBarLabel: t.nav.budgets }} />
       <Tab.Screen name="Stats" component={StatsScreen} options={{ tabBarLabel: 'Stats' }} />
+      <Tab.Screen name="Rapport" component={RapportScreen} options={{ tabBarLabel: 'Rapport' }} />
       <Tab.Screen name="Alertes" component={AlertesScreen} options={{ tabBarLabel: t.nav.alertes }} />
       <Tab.Screen name="Profil" component={ProfilScreen} options={{ tabBarLabel: t.nav.profil }} />
     </Tab.Navigator>
